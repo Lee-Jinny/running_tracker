@@ -1,34 +1,37 @@
 package com.jinnylee.runnningtracker.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-
+import com.jinnylee.runnningtracker.service.TrackingManager
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 
 class MainViewModel : ViewModel() {
 
-    // UI 상태 (경로 좌표들, 시간, 거리)
-    private val _runState = MutableStateFlow(RunState())
-    val runState = _runState.asStateFlow()
+    // TrackingManager의 데이터를 관찰하여 UI 상태(RunState)로 변환
+    val runState = combine(
+        TrackingManager.pathPoints,
+        TrackingManager.durationMillis,
+        TrackingManager.distanceMeters,
+        TrackingManager.isTracking
+    ) { points, time, distance, isTracking ->
+        RunState(
+            timeDuration = time,
+            distanceMeters = distance,
+            isTracking = isTracking,
+            pathPoints = points
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = RunState()
+    )
 
-    // ViewModel이 직접 Location 로직을 다룸 (혹은 서비스를 관찰)
-    fun startRun() {
-        // 서비스 시작 Intent 호출 로직
-    }
-
-    // 서비스에서 위치 데이터가 오면 UI 상태 업데이트
-    fun updateLocation(newLocation: LatLng) {
-        val currentList = _runState.value.pathPoints.toMutableList()
-        currentList.add(newLocation)
-        _runState.value = _runState.value.copy(pathPoints = currentList)
-    }
-
-    // 임시 함수
+    // UI에서 호출하지만 실제 상태 변경은 Service -> TrackingManager -> runState 흐름을 따름
     fun toggleTracking() {
-        _runState.update {
-            it.copy(isTracking = !it.isTracking)
-        }
+        // 여기서는 아무것도 안 해도 됨. ServiceHelper가 서비스를 시작/종료하면
+        // Service가 TrackingManager를 업데이트하고, 그게 runState에 반영됨.
     }
 }

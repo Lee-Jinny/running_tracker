@@ -2,9 +2,9 @@ package com.jinnylee.runnningtracker.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.view.WindowManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -30,16 +31,16 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.jinnylee.runnningtracker.MainActivity
 import com.jinnylee.runnningtracker.component.InformationCard
 import com.jinnylee.runnningtracker.component.MyLocationButton
 import com.jinnylee.runnningtracker.component.OperationButton
-import kotlinx.coroutines.launch
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.maps.android.compose.Polyline
 import com.jinnylee.runnningtracker.service.TrackingService
 import com.jinnylee.runnningtracker.util.ServiceHelper
 import com.jinnylee.runnningtracker.util.TimeFormatter
+import kotlinx.coroutines.launch
 
 
 @SuppressLint("MissingPermission")
@@ -48,6 +49,7 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val activity = context as? MainActivity
     val scope = rememberCoroutineScope()
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val runState by viewModel.runState.collectAsState()
@@ -109,6 +111,25 @@ fun MainScreen(
             }
         }
     }
+    // 운동 중 화면 꺼짐 방지 (WakeLock)
+    LaunchedEffect(runState.isTracking) {
+        if (runState.isTracking) {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
+    // 새로운 좌표가 생길 때마다 카메라 이동 (Camera Follow)
+    LaunchedEffect(runState.pathPoints) {
+        if (runState.isTracking && runState.pathPoints.isNotEmpty()) {
+            val lastPoint = runState.pathPoints.last()
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLng(lastPoint),
+                500 // 부드럽게 이동
+            )
+        }
+    }
 
 
     // 3. UI 레이아웃 (Box를 써서 지도 위에 UI를 겹침)
@@ -139,7 +160,7 @@ fun MainScreen(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(16.dp),
-            time = TimeFormatter.getReadableTime(runState.timeDuration),
+            time = TimeFormatter.getReadableTime(runState.timeDuration / 1000L),
 
             distance = "%.1f km".format(runState.distanceMeters / 1000f)
         )
