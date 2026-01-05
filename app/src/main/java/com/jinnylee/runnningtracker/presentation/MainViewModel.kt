@@ -1,10 +1,10 @@
 package com.jinnylee.runnningtracker.presentation
 
 import androidx.lifecycle.ViewModel
-import androidx.room.util.copy
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 
 class MainViewModel : ViewModel() {
@@ -23,5 +23,12 @@ class MainViewModel : ViewModel() {
         val currentList = _runState.value.pathPoints.toMutableList()
         currentList.add(newLocation)
         _runState.value = _runState.value.copy(pathPoints = currentList)
+    }
+
+    // 임시 함수
+    fun toggleTracking() {
+        _runState.update {
+            it.copy(isTracking = !it.isTracking)
+        }
     }
 }

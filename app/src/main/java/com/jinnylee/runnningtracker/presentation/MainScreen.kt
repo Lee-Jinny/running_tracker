@@ -2,7 +2,9 @@ package com.jinnylee.runnningtracker.presentation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -35,6 +37,8 @@ import com.jinnylee.runnningtracker.component.OperationButton
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.maps.android.compose.Polyline
+import com.jinnylee.runnningtracker.service.TrackingService
+import com.jinnylee.runnningtracker.util.ServiceHelper
 import com.jinnylee.runnningtracker.util.TimeFormatter
 
 
@@ -73,14 +77,19 @@ fun MainScreen(
 
     // 앱 시작 시 권한 요청 (최초 1회)
     LaunchedEffect(Unit) {
-        if (!hasLocationPermission) {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+        val permissionsToRequest = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        // 안드로이드 13(Tiramisu, API 33) 이상이면 알림 권한도 추가
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         }
+
+        // 권한이 없는 게 하나라도 있으면 요청 팝업 띄우기
+        // (간단하게 체크 로직 없이 런처 실행해도, 이미 허용된 건 알아서 패스됩니다)
+        permissionLauncher.launch(permissionsToRequest.toTypedArray())
     }
 
     // 권한이 있거나 허용되면 자동으로 내 위치로 이동
@@ -144,8 +153,24 @@ fun MainScreen(
             //상태에 따라 글자 변경 (시작 <-> 정지)
             text = if (runState.isTracking) "정지" else "시작",
             onClick = {
-                // 아직 서비스가 없어서 실제 위치는 안 잡히지만, 연결은 된 상태
-                viewModel.startRun()
+                // 1. ViewModel 상태 변경 (UI용 토글)
+                viewModel.toggleTracking()
+
+                // 2. 서비스 시작/종료 명령 날리기 (ServiceHelper 사용)
+                if (runState.isTracking) {
+                    // 이미 돌고 있으면 -> 정지 명령
+                    // 종료 명령을 담아서 '시작'을 호출하면, onStartCommand가 받아서 stopSelf()함
+                    ServiceHelper.triggerForegroundService(
+                        context,
+                        TrackingService.ACTION_STOP
+                    )
+                } else {
+                    // 정지 상태면 -> 시작 명령
+                    ServiceHelper.triggerForegroundService(
+                        context,
+                        TrackingService.ACTION_START
+                    )
+                }
             }
         )
 
