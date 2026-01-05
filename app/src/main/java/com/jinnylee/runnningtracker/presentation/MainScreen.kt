@@ -26,9 +26,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
@@ -76,6 +78,9 @@ fun MainScreen(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(37.5665, 126.9780), 15f)
     }
+
+    // 구글 맵 객체를 담을 변수
+    var map: GoogleMap? by remember { mutableStateOf(null) }
 
     // 앱 시작 시 권한 요청 (최초 1회)
     LaunchedEffect(Unit) {
@@ -147,6 +152,11 @@ fun MainScreen(
                 zoomControlsEnabled = false      // 줌 버튼 숨김
             )
         ) {
+            // 지도가 로드되면 map 변수에 객체를 저장해둠 (나중에 캡처용)
+            MapEffect(Unit) { googleMap ->
+                map = googleMap
+            }
+
             // pathPoints에 데이터가 들어오면 지도에 선이 그려짐
             Polyline(
                 points = runState.pathPoints,
@@ -174,13 +184,18 @@ fun MainScreen(
             //상태에 따라 글자 변경 (시작 <-> 정지)
             text = if (runState.isTracking) "정지" else "시작",
             onClick = {
-                // 1. ViewModel 상태 변경 (UI용 토글)
-                viewModel.toggleTracking()
-
                 // 2. 서비스 시작/종료 명령 날리기 (ServiceHelper 사용)
                 if (runState.isTracking) {
                     // 이미 돌고 있으면 -> 정지 명령
-                    // 종료 명령을 담아서 '시작'을 호출하면, onStartCommand가 받아서 stopSelf()함
+
+                    // (A) 지도 캡처 및 저장 시도
+                    map?.snapshot { bitmap ->
+                        // 캡처된 이미지를 ViewModel로 보내서 저장 (null일 수도 있음)
+                        if (bitmap != null) {
+                            viewModel.stopRunAndSave(bitmap)
+                        }
+                    }
+                    // (B) 종료 명령을 담아서 '시작'을 호출하면, onStartCommand가 받아서 stopSelf()함
                     ServiceHelper.triggerForegroundService(
                         context,
                         TrackingService.ACTION_STOP

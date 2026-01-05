@@ -1,0 +1,28 @@
+package com.jinnylee.runnningtracker.data.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.jinnylee.runnningtracker.data.entity.Run
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface RunDao {
+
+    // 운동 기록 저장 (이미 있으면 덮어쓰기 말고 교체)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRun(run: Run)
+
+    // 저장된 모든 기록 가져오기 (날짜 최신순 정렬)
+    @Query("SELECT * FROM running_table ORDER BY timestamp DESC")
+    fun getAllRuns(): Flow<List<Run>>
+
+    // 총 운동 시간 가져오기 (통계용)
+    @Query("SELECT SUM(timeInMillis) FROM running_table")
+    fun getTotalTimeInMillis(): Flow<Long>
+
+    // 총 거리 가져오기 (통계용)
+    @Query("SELECT SUM(distanceInMeters) FROM running_table")
+    fun getTotalDistance(): Flow<Int>
+}
