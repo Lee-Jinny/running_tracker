@@ -14,5 +14,5 @@ data class Run(
     val distanceInMeters: Int = 0, // 이동 거리 (미터)
     val avgSpeedInKMH: Float = 0f, // 평균 속도 (km/h)
     val caloriesBurned: Int = 0,   // 소모 칼로리 (kcal)
-    val img: Bitmap? = null        // 지도 스크린샷 이미지
+    val img: ByteArray?     // 지도 스크린샷 이미지
 )

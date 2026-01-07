@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.jinnylee.runnningtracker.data.dao.RunDao
 import com.jinnylee.runnningtracker.data.entity.Run
 
-@Database(entities = [Run::class], version = 2)
+@Database(entities = [Run::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class RunningDatabase : RoomDatabase() {
 
@@ -25,7 +25,7 @@ abstract class RunningDatabase : RoomDatabase() {
                     context.applicationContext,
                     RunningDatabase::class.java,
                     "running_db"
-                ).fallbackToDestructiveMigration(false)
+                ).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
