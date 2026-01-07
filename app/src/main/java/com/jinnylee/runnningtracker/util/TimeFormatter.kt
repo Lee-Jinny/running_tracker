@@ -26,4 +26,10 @@ object TimeFormatter {
         val dateFormat = SimpleDateFormat("EEEE - MMMM d", Locale.ENGLISH)
         return dateFormat.format(Date())
     }
+
+    // timestamp를 "Oct 22, 2026" 형식으로 변환
+    fun formatDate(timestamp: Long): String {
+        val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH)
+        return dateFormat.format(Date(timestamp))
+    }
 }

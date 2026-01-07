@@ -33,7 +33,11 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
                 )
             }
             entry<Route.Record> {
-                RecordRoot()
+                RecordRoot(
+                    onNavigateBack = {
+                        backStack.remove(Route.Record)
+                    }
+                )
             }
         }
     )
