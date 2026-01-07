@@ -7,7 +7,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.jinnylee.runnningtracker.presentation.screen.main.MainScreen
+import com.jinnylee.runnningtracker.presentation.screen.main.MainRoot
+import com.jinnylee.runnningtracker.presentation.screen.record.RecordScreen
 
 @Composable
 fun NavigationRoot(modifier: Modifier = Modifier) {
@@ -24,7 +25,7 @@ fun NavigationRoot(modifier: Modifier = Modifier) {
         ),
         entryProvider = entryProvider {
             entry<Route.Main> {
-                MainScreen()
+                MainRoot()
             }
             entry<Route.Record> {
                RecordScreen()
