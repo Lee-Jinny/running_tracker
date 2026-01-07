@@ -11,10 +11,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jinnylee.runnningtracker.ui.theme.Anton
+import com.jinnylee.runnningtracker.ui.theme.Background
+import com.jinnylee.runnningtracker.ui.theme.Point
+import com.jinnylee.runnningtracker.ui.theme.White
 
 @Composable
 fun InformationCard(
@@ -25,7 +28,7 @@ fun InformationCard(
     Card(
         modifier = modifier
             .fillMaxWidth(0.9f),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
+        colors = CardDefaults.cardColors(containerColor = Background.copy(alpha = 0.8f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Row(
@@ -35,12 +38,12 @@ fun InformationCard(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "시간", color = Color.Gray, fontSize = 12.sp)
-                Text(text = time, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                Text(text = "TIME", color = White.copy(alpha = 0.6f), fontSize = 12.sp, fontFamily = Anton)
+                Text(text = time, color = Point, fontWeight = FontWeight.Bold, fontSize = 28.sp, fontFamily = Anton)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "거리", color = Color.Gray, fontSize = 12.sp)
-                Text(text = distance, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+                Text(text = "DISTANCE", color = White.copy(alpha = 0.6f), fontSize = 12.sp, fontFamily = Anton)
+                Text(text = distance, color = Point, fontWeight = FontWeight.Bold, fontSize = 28.sp, fontFamily = Anton)
             }
         }
     }

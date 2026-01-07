@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.jinnylee.runnningtracker.core.routing.NavigationRoot
+import com.jinnylee.runnningtracker.ui.theme.RunnningTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -13,7 +14,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NavigationRoot()
+            RunnningTrackerTheme {
+                NavigationRoot()
+            }
         }
     }
 }

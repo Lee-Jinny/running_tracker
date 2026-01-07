@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapEffect
@@ -24,9 +25,11 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.jinnylee.runnningtracker.MainActivity
+import com.jinnylee.runnningtracker.R
 import com.jinnylee.runnningtracker.presentation.component.InformationCard
 import com.jinnylee.runnningtracker.presentation.component.MyLocationButton
 import com.jinnylee.runnningtracker.presentation.component.OperationButton
+import com.jinnylee.runnningtracker.ui.theme.Point
 import com.jinnylee.runnningtracker.util.TimeFormatter
 
 @SuppressLint("MissingPermission")
@@ -39,6 +42,12 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val activity = context as? MainActivity
+
+    // 지도 다크 스타일 로드
+    val mapProperties = MapProperties(
+        isMyLocationEnabled = true,
+        mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style)
+    )
 
     // 운동 중 화면 꺼짐 방지
     LaunchedEffect(state.isTracking) {
@@ -55,7 +64,7 @@ fun MainScreen(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(isMyLocationEnabled = true),
+            properties = mapProperties,
             uiSettings = MapUiSettings(
                 myLocationButtonEnabled = false,
                 zoomControlsEnabled = false
@@ -69,8 +78,8 @@ fun MainScreen(
             // 이동 경로 그리기
             Polyline(
                 points = state.pathPoints,
-                color = Color.Blue,
-                width = 10f
+                color = Point,
+                width = 12f
             )
         }
 
@@ -89,7 +98,7 @@ fun MainScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 48.dp),
-            text = if (state.isTracking) "정지" else "시작",
+            text = if (state.isTracking) "STOP" else "GO!",
             onClick = {
                 // 사용자의 의도(Action)를 ViewModel로 전달
                 if (state.isTracking) {
@@ -101,14 +110,14 @@ fun MainScreen(
         )
 
         // [Layer 4] 내 위치 버튼
-        MyLocationButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 48.dp),
-            onClick = {
-                onAction(MainAction.MyLocationClicked)
-            }
-        )
+//        MyLocationButton(
+//            modifier = Modifier
+//                .align(Alignment.BottomEnd)
+//                .padding(end = 16.dp, bottom = 48.dp),
+//            onClick = {
+//                onAction(MainAction.MyLocationClicked)
+//            }
+//        )
     }
 }
 
