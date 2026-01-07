@@ -33,9 +33,11 @@ class MainViewModel @Inject constructor(
         TrackingManager.distanceMeters,
         TrackingManager.isTracking
     ) { points, time, distance, isTracking ->
+        val calories = ((distance / 1000f) * 70).toInt()
         RunState(
             timeDuration = time,
             distanceMeters = distance,
+            calories = calories,
             isTracking = isTracking,
             pathPoints = points
         )
@@ -51,11 +53,17 @@ class MainViewModel @Inject constructor(
     fun onAction(action: MainAction) {
         viewModelScope.launch {
             when(action) {
-                MainAction.StopClicked -> {
-                    _event.emit(MainEvent.StopTracking)
-                }
                 MainAction.StartClicked -> {
                     _event.emit(MainEvent.StartTracking)
+                }
+                MainAction.PauseClicked -> {
+                    _event.emit(MainEvent.PauseTracking)
+                }
+                MainAction.ResumeClicked -> {
+                    _event.emit(MainEvent.ResumeTracking)
+                }
+                MainAction.SaveClicked -> {
+                    _event.emit(MainEvent.SaveRun)
                 }
                 MainAction.MyLocationClicked -> {
                     _event.emit(MainEvent.MoveToMyLocation)

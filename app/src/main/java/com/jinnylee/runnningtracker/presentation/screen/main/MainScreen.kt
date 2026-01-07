@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,8 +26,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.jinnylee.runnningtracker.MainActivity
 import com.jinnylee.runnningtracker.R
 import com.jinnylee.runnningtracker.presentation.component.InformationCard
-import com.jinnylee.runnningtracker.presentation.component.MyLocationButton
-import com.jinnylee.runnningtracker.presentation.component.OperationButton
+import com.jinnylee.runnningtracker.presentation.component.TrackingControlPanel
 import com.jinnylee.runnningtracker.ui.theme.Point
 import com.jinnylee.runnningtracker.util.TimeFormatter
 
@@ -87,26 +85,20 @@ fun MainScreen(
         InformationCard(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(16.dp),
+                .padding(top = 48.dp),
             // TimeFormatter에는 초(sec) 단위를 넘겨야 하므로 / 1000
             time = TimeFormatter.getReadableTime(state.timeDuration / 1000L),
-            distance = "%.1f km".format(state.distanceMeters / 1000f)
+            distance = "%.1f km".format(state.distanceMeters / 1000f),
+            calories = "${state.calories} kcal"
         )
 
-        // [Layer 3] 하단 시작/정지 버튼
-        OperationButton(
+        // [Layer 3] 하단 컨트롤 패널
+        TrackingControlPanel(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 48.dp),
-            text = if (state.isTracking) "STOP" else "GO!",
-            onClick = {
-                // 사용자의 의도(Action)를 ViewModel로 전달
-                if (state.isTracking) {
-                    onAction(MainAction.StopClicked)
-                } else {
-                    onAction(MainAction.StartClicked)
-                }
-            }
+            state = state,
+            onAction = onAction
         )
 
         // [Layer 4] 내 위치 버튼
@@ -138,6 +130,7 @@ fun MainScreenTrackingPreview() {
         isTracking = true,
         timeDuration = 3600000L, // 1시간 (밀리초)
         distanceMeters = 5000,   // 5000미터
+        calories = 350,
         pathPoints = samplePath
     )
 

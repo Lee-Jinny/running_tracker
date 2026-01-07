@@ -23,27 +23,32 @@ import com.jinnylee.runnningtracker.ui.theme.White
 fun InformationCard(
     modifier: Modifier = Modifier,
     time: String,
-    distance: String
+    distance: String,
+    calories: String
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth(0.9f),
+            .fillMaxWidth(0.95f),
         colors = CardDefaults.cardColors(containerColor = Background.copy(alpha = 0.8f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(vertical = 12.dp, horizontal = 8.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "TIME", color = White.copy(alpha = 0.6f), fontSize = 12.sp, fontFamily = Anton)
-                Text(text = time, color = Point, fontWeight = FontWeight.Bold, fontSize = 28.sp, fontFamily = Anton)
+                Text(text = "TIME", color = White.copy(alpha = 0.6f), fontSize = 10.sp, fontFamily = Anton)
+                Text(text = time, color = Point, fontWeight = FontWeight.Bold, fontSize = 22.sp, fontFamily = Anton)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "DISTANCE", color = White.copy(alpha = 0.6f), fontSize = 12.sp, fontFamily = Anton)
-                Text(text = distance, color = Point, fontWeight = FontWeight.Bold, fontSize = 28.sp, fontFamily = Anton)
+                Text(text = "DISTANCE", color = White.copy(alpha = 0.6f), fontSize = 10.sp, fontFamily = Anton)
+                Text(text = distance, color = Point, fontWeight = FontWeight.Bold, fontSize = 22.sp, fontFamily = Anton)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "CALORIES", color = White.copy(alpha = 0.6f), fontSize = 10.sp, fontFamily = Anton)
+                Text(text = calories, color = Point, fontWeight = FontWeight.Bold, fontSize = 22.sp, fontFamily = Anton)
             }
         }
     }

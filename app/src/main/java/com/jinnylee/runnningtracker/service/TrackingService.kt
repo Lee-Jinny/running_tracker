@@ -28,6 +28,7 @@ class TrackingService : Service() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
     private var timerJob: Job? = null
     private var startTime = 0L
+    private var accumulatedTime = 0L
     private var lastLocation: Location? = null
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -56,6 +57,14 @@ class TrackingService : Service() {
                     TrackingManager.clear()
                     startForegroundService()
                     startTracking()
+                }
+            }
+            ACTION_PAUSE -> {
+                pauseTracking()
+            }
+            ACTION_RESUME -> {
+                if (!TrackingManager.isTracking.value) {
+                    resumeTracking()
                 }
             }
             ACTION_STOP -> {
@@ -95,32 +104,47 @@ class TrackingService : Service() {
     @SuppressLint("MissingPermission")
     private fun startTracking() {
         TrackingManager.setTrackingState(true)
-
-        // 지난번 운동의 마지막 위치 기록을 지워주기
+        accumulatedTime = 0L
         lastLocation = null
         
-        // 위치 요청 설정
+        startLocationUpdates()
+        startTimer()
+    }
+    
+    private fun pauseTracking() {
+        TrackingManager.setTrackingState(false)
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        timerJob?.cancel()
+        accumulatedTime += System.currentTimeMillis() - startTime
+    }
+    
+    @SuppressLint("MissingPermission")
+    private fun resumeTracking() {
+        TrackingManager.setTrackingState(true)
+        startLocationUpdates()
+        startTimer()
+    }
+    
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000L)
             .setMinUpdateIntervalMillis(1000L)
             .build()
 
-        // 위치 업데이트 시작
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
         )
-        
-        // 타이머 시작
+    }
+    
+    private fun startTimer() {
         startTime = System.currentTimeMillis()
         timerJob = serviceScope.launch {
             while (TrackingManager.isTracking.value) {
-                val elapsed = System.currentTimeMillis() - startTime
-                delay(1000L) // 1초마다 갱신하되
-
-                // 현재 시간 - 시작 시간 = 정확한 경과 시간
-                val timePassed = System.currentTimeMillis() - startTime
+                val timePassed = System.currentTimeMillis() - startTime + accumulatedTime
                 TrackingManager.updateDuration(timePassed)
+                delay(1000L)
             }
         }
     }
@@ -129,6 +153,7 @@ class TrackingService : Service() {
         TrackingManager.setTrackingState(false)
         fusedLocationClient.removeLocationUpdates(locationCallback)
         timerJob?.cancel()
+        accumulatedTime = 0L
     }
     
     private fun addPathPoint(location: Location) {
@@ -146,6 +171,8 @@ class TrackingService : Service() {
 
     companion object {
         const val ACTION_START = "ACTION_START"
+        const val ACTION_PAUSE = "ACTION_PAUSE"
+        const val ACTION_RESUME = "ACTION_RESUME"
         const val ACTION_STOP = "ACTION_STOP"
         const val CHANNEL_ID = "tracking_channel"
     }

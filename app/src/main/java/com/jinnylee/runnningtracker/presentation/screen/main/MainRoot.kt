@@ -59,7 +59,15 @@ fun MainRoot(
                     // 서비스 시작 명령
                     ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_START)
                 }
-                MainEvent.StopTracking -> {
+                MainEvent.PauseTracking -> {
+                    // 서비스 일시 정지 명령
+                    ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_PAUSE)
+                }
+                MainEvent.ResumeTracking -> {
+                    // 서비스 재개 명령
+                    ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_RESUME)
+                }
+                MainEvent.SaveRun -> {
                     // (A) 지도 캡처 시도
                     googleMap?.snapshot { bitmap ->
                         if (bitmap != null) {
@@ -69,7 +77,11 @@ fun MainRoot(
                             Toast.makeText(context, "지도 캡처 실패", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    // (C) 서비스 종료 명령
+                    // (C) 서비스 종료 명령 (저장 후 종료)
+                    ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_STOP)
+                }
+                MainEvent.StopTracking -> {
+                    // (Deprecated or fallback) 서비스 종료
                     ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_STOP)
                 }
                 MainEvent.MoveToMyLocation -> {
