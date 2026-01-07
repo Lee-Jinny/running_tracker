@@ -1,4 +1,4 @@
-package com.jinnylee.runnningtracker.presentation
+package com.jinnylee.runnningtracker.presentation.screen.main
 
 import com.google.android.gms.maps.model.LatLng
 data class RunState(

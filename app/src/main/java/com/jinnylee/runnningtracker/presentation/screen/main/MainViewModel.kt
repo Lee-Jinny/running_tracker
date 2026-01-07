@@ -1,11 +1,9 @@
-package com.jinnylee.runnningtracker.presentation
+package com.jinnylee.runnningtracker.presentation.screen.main
 
 import android.app.Application
 import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
 import com.jinnylee.runnningtracker.data.database.RunningDatabase
 import com.jinnylee.runnningtracker.data.entity.Run
 import com.jinnylee.runnningtracker.service.TrackingManager

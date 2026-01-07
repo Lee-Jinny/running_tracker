@@ -1,4 +1,4 @@
-package com.jinnylee.runnningtracker.presentation
+package com.jinnylee.runnningtracker.presentation.screen.main
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -36,9 +37,9 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.jinnylee.runnningtracker.MainActivity
-import com.jinnylee.runnningtracker.component.InformationCard
-import com.jinnylee.runnningtracker.component.MyLocationButton
-import com.jinnylee.runnningtracker.component.OperationButton
+import com.jinnylee.runnningtracker.presentation.component.InformationCard
+import com.jinnylee.runnningtracker.presentation.component.MyLocationButton
+import com.jinnylee.runnningtracker.presentation.component.OperationButton
 import com.jinnylee.runnningtracker.service.TrackingService
 import com.jinnylee.runnningtracker.util.ServiceHelper
 import com.jinnylee.runnningtracker.util.TimeFormatter
@@ -160,7 +161,7 @@ fun MainScreen(
             // pathPoints에 데이터가 들어오면 지도에 선이 그려짐
             Polyline(
                 points = runState.pathPoints,
-                color = androidx.compose.ui.graphics.Color.Blue,
+                color = Color.Blue,
                 width = 10f
             )
         }

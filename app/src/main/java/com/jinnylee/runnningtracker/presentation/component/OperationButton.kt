@@ -1,4 +1,4 @@
-package com.jinnylee.runnningtracker.component
+package com.jinnylee.runnningtracker.presentation.component
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
