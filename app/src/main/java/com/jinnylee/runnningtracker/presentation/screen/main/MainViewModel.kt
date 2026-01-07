@@ -1,5 +1,6 @@
 package com.jinnylee.runnningtracker.presentation.screen.main
 
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +10,9 @@ import com.jinnylee.runnningtracker.presentation.screen.main.MainAction
 import com.jinnylee.runnningtracker.presentation.screen.main.MainEvent
 import com.jinnylee.runnningtracker.presentation.screen.main.RunState
 import com.jinnylee.runnningtracker.service.TrackingManager
+import com.jinnylee.runnningtracker.util.BatteryUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,7 @@ import kotlin.math.round
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val saveRunUseCase: SaveRunUseCase
 ) : ViewModel() {
 
@@ -54,6 +58,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             when(action) {
                 MainAction.StartClicked -> {
+                    val batteryPct = BatteryUtil.getBatteryPercentage(context)
+                    if (batteryPct <= 30) {
+                        // 경고 이벤트 발생 -> UI에서 Toast나 Dialog 띄우기
+                        _event.emit(MainEvent.ShowBatteryWarning)
+                    }
                     _event.emit(MainEvent.StartTracking)
                 }
                 MainAction.PauseClicked -> {

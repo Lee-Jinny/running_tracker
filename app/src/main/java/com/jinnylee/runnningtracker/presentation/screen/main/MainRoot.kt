@@ -1,12 +1,17 @@
 package com.jinnylee.runnningtracker.presentation.screen.main
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -39,6 +45,32 @@ fun MainRoot(
     
     // 스낵바 상태 관리
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // 배터리 부족 저장 감지 리시버
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {//
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == TrackingService.ACTION_LOW_BATTERY_SAVED) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Run saved due to low battery.")
+                    }
+                }
+            }
+        }
+        val filter = IntentFilter(TrackingService.ACTION_LOW_BATTERY_SAVED)
+        
+        // ContextCompat을 사용하여 최신 보안 정책(Exported/NotExported) 준수 및 하위 호환성 확보
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
 
     // 1. ViewModel의 State 관찰 (UI 업데이트용)
     val state by viewModel.state.collectAsState()
@@ -79,7 +111,7 @@ fun MainRoot(
 
     // 5. [Event 처리] ViewModel에서 날아온 명령(Side Effect) 수행
     LaunchedEffect(Unit) {
-        viewModel.event.collectLatest { event ->
+        viewModel.event.collect { event ->
             when (event) {
                 MainEvent.StartTracking -> {
                     // 서비스 시작 명령
@@ -120,6 +152,9 @@ fun MainRoot(
                 }
                 is MainEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(event.message)
+                }
+                MainEvent.ShowBatteryWarning -> {
+                    snackbarHostState.showSnackbar("Battery is low (under 30%).")
                 }
                 MainEvent.MoveToMyLocation -> {
                     // 내 위치로 카메라 이동

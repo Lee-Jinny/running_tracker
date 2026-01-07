@@ -9,4 +9,5 @@ sealed interface MainEvent {
     data object SaveRun : MainEvent
     data object NavigateToRecord : MainEvent
     data class ShowSnackbar(val message: String) : MainEvent
+    data object ShowBatteryWarning : MainEvent
 }

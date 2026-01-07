@@ -32,6 +32,7 @@ import com.jinnylee.runnningtracker.MainActivity
 import com.jinnylee.runnningtracker.R
 import com.jinnylee.runnningtracker.presentation.component.InformationCard
 import com.jinnylee.runnningtracker.presentation.component.RunTopBar
+import com.jinnylee.runnningtracker.presentation.component.SnackbarComponent
 import com.jinnylee.runnningtracker.presentation.component.TrackingControlPanel
 import com.jinnylee.runnningtracker.ui.theme.Anton
 import com.jinnylee.runnningtracker.ui.theme.Background
@@ -143,26 +144,13 @@ fun MainScreen(
         )
 
         // [Layer 4] 스낵바 호스트
-        SnackbarHost(
-            hostState = snackbarHostState,
+        SnackbarComponent(
+            snackbarHostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp),
-
-            snackbar = { data ->
-                androidx.compose.material3.Snackbar(
-                    snackbarData = data,
-                    containerColor = Background,
-                    contentColor = White,
-                    shape = RoundedCornerShape(20.dp)
-                )
-
-            }
-
+                .padding(bottom = 16.dp)
         )
-
     }
-
 }
 
 

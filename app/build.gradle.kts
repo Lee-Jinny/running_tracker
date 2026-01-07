@@ -24,10 +24,9 @@ android {
 
     defaultConfig {
         applicationId = "com.jinnylee.runnningtracker"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY") ?: ""
