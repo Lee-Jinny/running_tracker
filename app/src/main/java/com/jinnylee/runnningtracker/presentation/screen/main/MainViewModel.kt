@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jinnylee.runnningtracker.domain.model.Run
-import com.jinnylee.runnningtracker.domain.repository.RunRepository
+import com.jinnylee.runnningtracker.domain.usecase.SaveRunUseCase
 import com.jinnylee.runnningtracker.presentation.screen.main.MainAction
 import com.jinnylee.runnningtracker.presentation.screen.main.MainEvent
 import com.jinnylee.runnningtracker.presentation.screen.main.RunState
@@ -22,7 +22,7 @@ import kotlin.math.round
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val runRepository: RunRepository
+    private val saveRunUseCase: SaveRunUseCase
 ) : ViewModel() {
 
     // TrackingManager의 데이터를 관찰하여 UI 상태(RunState)로 변환
@@ -101,7 +101,7 @@ class MainViewModel @Inject constructor(
             )
 
             // 4. DB 저장
-            runRepository.insertRun(run)
+            saveRunUseCase(run)
         }
     }
 }
