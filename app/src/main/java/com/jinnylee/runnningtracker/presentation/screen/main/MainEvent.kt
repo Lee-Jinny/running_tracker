@@ -8,4 +8,5 @@ sealed interface MainEvent {
     data object MoveToMyLocation : MainEvent
     data object SaveRun : MainEvent
     data object NavigateToRecord : MainEvent
+    data class ShowSnackbar(val message: String) : MainEvent
 }

@@ -69,6 +69,7 @@ class TrackingService : Service() {
             }
             ACTION_STOP -> {
                 stopTracking()
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf() // 서비스 종료
             }
         }
@@ -151,6 +152,7 @@ class TrackingService : Service() {
     
     private fun stopTracking() {
         TrackingManager.setTrackingState(false)
+        TrackingManager.clear() // 데이터 초기화 (UI도 초기 상태로 복귀)
         fusedLocationClient.removeLocationUpdates(locationCallback)
         timerJob?.cancel()
         accumulatedTime = 0L

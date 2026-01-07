@@ -5,6 +5,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,6 +36,9 @@ fun MainRoot(
     
     val scope = rememberCoroutineScope()
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    
+    // 스낵바 상태 관리
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // 1. ViewModel의 State 관찰 (UI 업데이트용)
     val state by viewModel.state.collectAsState()
@@ -50,7 +54,28 @@ fun MainRoot(
     // 4. 권한 요청 런처
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { /* 필요하다면 권한 거부 시 처리 로직 추가 */ }
+    ) { permissions ->
+        // 권한 허용 시 초기 위치로 이동
+        val isGranted = permissions.values.all { it }
+        if (isGranted) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        scope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(it.latitude, it.longitude),
+                                    17f
+                                )
+                            )
+                        }
+                    }
+                }
+            } catch (e: SecurityException) {
+                // Ignore
+            }
+        }
+    }
 
     // 5. [Event 처리] ViewModel에서 날아온 명령(Side Effect) 수행
     LaunchedEffect(Unit) {
@@ -69,17 +94,22 @@ fun MainRoot(
                     ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_RESUME)
                 }
                 MainEvent.SaveRun -> {
-                    // (A) 지도 캡처 시도
+                    // (A) 현재 상태 캡처 (스냅샷 찍는 동안 상태가 초기화될 수 있으므로 미리 변수에 저장)
+                    val currentPoints = state.pathPoints
+                    val currentDuration = state.timeDuration
+                    val currentDistance = state.distanceMeters
+
+                    // (B) 지도 캡처 시도
                     googleMap?.snapshot { bitmap ->
                         if (bitmap != null) {
-                            // (B) 캡처된 이미지를 ViewModel로 보내 저장
-                            viewModel.saveRun(bitmap)
+                            // (C) 캡처된 이미지와 미리 저장해둔 데이터를 ViewModel로 보내 저장
+                            viewModel.saveRun(bitmap, currentPoints, currentDuration, currentDistance)
                         } else {
                             Toast.makeText(context, "지도 캡처 실패", Toast.LENGTH_SHORT).show()
                         }
+                        // (D) 저장 로직 호출 후 서비스 종료 명령 (순서 중요: 데이터 확보 후 종료)
+                        ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_STOP)
                     }
-                    // (C) 서비스 종료 명령 (저장 후 종료)
-                    ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_STOP)
                 }
                 MainEvent.StopTracking -> {
                     // (Deprecated or fallback) 서비스 종료
@@ -87,6 +117,9 @@ fun MainRoot(
                 }
                 MainEvent.NavigateToRecord -> {
                     onNavigateToRecord()
+                }
+                is MainEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
                 }
                 MainEvent.MoveToMyLocation -> {
                     // 내 위치로 카메라 이동
@@ -143,6 +176,7 @@ fun MainRoot(
     MainScreen(
         state = state,
         cameraPositionState = cameraPositionState,
+        snackbarHostState = snackbarHostState,
         onMapLoaded = { map -> googleMap = map }, // 맵 객체를 Root로 전달
         onAction = viewModel::onAction            // 사용자 입력을 ViewModel로 전달
     )

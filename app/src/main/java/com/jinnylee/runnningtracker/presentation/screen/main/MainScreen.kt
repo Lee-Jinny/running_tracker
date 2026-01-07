@@ -6,6 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,11 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
@@ -25,16 +28,13 @@ import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.rememberCameraPositionState
-import androidx.compose.material3.Text
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import com.jinnylee.runnningtracker.MainActivity
 import com.jinnylee.runnningtracker.R
 import com.jinnylee.runnningtracker.presentation.component.InformationCard
 import com.jinnylee.runnningtracker.presentation.component.RunTopBar
 import com.jinnylee.runnningtracker.presentation.component.TrackingControlPanel
 import com.jinnylee.runnningtracker.ui.theme.Anton
+import com.jinnylee.runnningtracker.ui.theme.Background
 import com.jinnylee.runnningtracker.ui.theme.Point
 import com.jinnylee.runnningtracker.ui.theme.White
 import com.jinnylee.runnningtracker.util.TimeFormatter
@@ -44,6 +44,7 @@ import com.jinnylee.runnningtracker.util.TimeFormatter
 fun MainScreen(
     state: RunState,                  // 보여줄 데이터
     cameraPositionState: CameraPositionState, // 지도 카메라 상태
+    snackbarHostState: SnackbarHostState, // 스낵바 상태
     onMapLoaded: (GoogleMap) -> Unit, // 지도 객체 전달 콜백
     onAction: (MainAction) -> Unit    // 사용자 클릭 전달 콜백
 ) {
@@ -141,17 +142,29 @@ fun MainScreen(
             onAction = onAction
         )
 
-        // [Layer 4] 내 위치 버튼
-//        MyLocationButton(
-//            modifier = Modifier
-//                .align(Alignment.BottomEnd)
-//                .padding(end = 16.dp, bottom = 48.dp),
-//            onClick = {
-//                onAction(MainAction.MyLocationClicked)
-//            }
-//        )
+        // [Layer 4] 스낵바 호스트
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 48.dp),
+
+            snackbar = { data ->
+                androidx.compose.material3.Snackbar(
+                    snackbarData = data,
+                    containerColor = Background,
+                    contentColor = White,
+                    shape = RoundedCornerShape(20.dp)
+                )
+
+            }
+
+        )
+
     }
+
 }
+
 
 
 // 1. 운동 중일 때의 미리보기 (데이터가 있는 상태)
@@ -160,9 +173,9 @@ fun MainScreen(
 fun MainScreenTrackingPreview() {
     // 가짜 데이터 생성
     val samplePath = listOf(
-        LatLng(37.5665, 126.9780),
-        LatLng(37.5666, 126.9781),
-        LatLng(37.5667, 126.9782)
+        com.google.android.gms.maps.model.LatLng(37.5665, 126.9780),
+        com.google.android.gms.maps.model.LatLng(37.5666, 126.9781),
+        com.google.android.gms.maps.model.LatLng(37.5667, 126.9782)
     )
 
     // 가짜 상태 (1시간 운동, 5km 이동)
@@ -175,15 +188,21 @@ fun MainScreenTrackingPreview() {
     )
 
     // 카메라 위치 (서울 시청)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(37.5665, 126.9780), 15f)
+    val cameraPositionState = com.google.maps.android.compose.rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+            com.google.android.gms.maps.model.LatLng(
+                37.5665,
+                126.9780
+            ), 15f
+        )
     }
 
     MainScreen(
         state = mockState,
         cameraPositionState = cameraPositionState,
-        onMapLoaded = {},
-        onAction = {}
+        snackbarHostState = androidx.compose.material3.SnackbarHostState(),
+        onMapLoaded = {}, // 프리뷰에선 동작 안 하므로 빈 람다
+        onAction = {}     // 프리뷰에선 동작 안 하므로 빈 람다
     )
 }
 
@@ -198,13 +217,19 @@ fun MainScreenIdlePreview() {
         pathPoints = emptyList()
     )
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(37.5665, 126.9780), 15f)
+    val cameraPositionState = com.google.maps.android.compose.rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+            com.google.android.gms.maps.model.LatLng(
+                37.5665,
+                126.9780
+            ), 15f
+        )
     }
 
     MainScreen(
         state = mockState,
         cameraPositionState = cameraPositionState,
+        snackbarHostState = androidx.compose.material3.SnackbarHostState(),
         onMapLoaded = {},
         onAction = {}
     )

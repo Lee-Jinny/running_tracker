@@ -11,9 +11,13 @@ object ServiceHelper {
     fun triggerForegroundService(context: Context, action: String) {
         Intent(context, TrackingService::class.java).apply {
             this.action = action
-            // 명령을 전달하는 것이므로 시작할 때 버전 체크를 자동으로 해주는 ContextCompat 사용
-            // 종료 명령(ACTION_STOP)을 담아서 호출해도 onStartCommand가 받아서 처리함
-            ContextCompat.startForegroundService(context, this)
+            // ACTION_START일 때만 startForegroundService 호출 (서비스가 없을 때 새로 띄우고 알림 등록해야 하므로)
+            // 그 외(PAUSE, RESUME, STOP)는 이미 떠있는 서비스에 명령만 전달하면 되므로 startService 사용
+            if (action == TrackingService.ACTION_START) {
+                ContextCompat.startForegroundService(context, this)
+            } else {
+                context.startService(this)
+            }
         }
     }
 }
