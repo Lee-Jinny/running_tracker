@@ -1,5 +1,7 @@
 package com.jinnylee.runnningtracker.util
 
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 object TimeFormatter {
@@ -17,5 +19,11 @@ object TimeFormatter {
             // 1시간 미만일 때: 30:45
             String.format(Locale.getDefault(), "%02d:%02d", minutes, remainingSeconds)
         }
+    }
+
+    // 현재 날짜를 "Monday - March 23" 형식으로 반환 (API 24 호환)
+    fun getCurrentDate(): String {
+        val dateFormat = SimpleDateFormat("EEEE - MMMM d", Locale.ENGLISH)
+        return dateFormat.format(Date())
     }
 }

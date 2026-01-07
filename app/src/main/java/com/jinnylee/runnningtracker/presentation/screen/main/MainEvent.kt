@@ -7,4 +7,5 @@ sealed interface MainEvent {
     data object ResumeTracking : MainEvent
     data object MoveToMyLocation : MainEvent
     data object SaveRun : MainEvent
+    data object NavigateToRecord : MainEvent
 }

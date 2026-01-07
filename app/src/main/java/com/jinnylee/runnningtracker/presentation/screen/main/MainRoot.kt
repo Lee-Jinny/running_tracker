@@ -28,7 +28,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainRoot(
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    onNavigateToRecord: () -> Unit = {}
 ) {
     val context = LocalContext.current
     
@@ -83,6 +84,9 @@ fun MainRoot(
                 MainEvent.StopTracking -> {
                     // (Deprecated or fallback) 서비스 종료
                     ServiceHelper.triggerForegroundService(context, TrackingService.ACTION_STOP)
+                }
+                MainEvent.NavigateToRecord -> {
+                    onNavigateToRecord()
                 }
                 MainEvent.MoveToMyLocation -> {
                     // 내 위치로 카메라 이동

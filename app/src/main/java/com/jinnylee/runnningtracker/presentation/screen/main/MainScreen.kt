@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.jinnylee.runnningtracker.MainActivity
 import com.jinnylee.runnningtracker.R
 import com.jinnylee.runnningtracker.presentation.component.InformationCard
+import com.jinnylee.runnningtracker.presentation.component.RunTopBar
 import com.jinnylee.runnningtracker.presentation.component.TrackingControlPanel
 import com.jinnylee.runnningtracker.ui.theme.Anton
 import com.jinnylee.runnningtracker.ui.theme.Point
@@ -103,6 +104,12 @@ fun MainScreen(
 
         // [Layer 2] 조건부 UI (READY 텍스트 또는 정보 카드)
         if (isIdle) {
+            // 상단 바 (날짜, 기록 버튼 등)
+            RunTopBar(
+                modifier = Modifier.align(Alignment.TopCenter),
+                onRecordClick = { onAction(MainAction.RecordClicked) }
+            )
+
             // 시작 전: 중앙 안내 텍스트
             Text(
                 text = "READY TO\nRUN?",

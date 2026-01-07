@@ -6,4 +6,5 @@ sealed interface MainAction {
     data object ResumeClicked : MainAction     // 다시 시작 (GO)
     data object SaveClicked : MainAction       // 저장 및 종료 (SAVE)
     data object MyLocationClicked : MainAction // 내 위치 버튼 클릭
+    data object RecordClicked : MainAction     // 기록 버튼 클릭
 }

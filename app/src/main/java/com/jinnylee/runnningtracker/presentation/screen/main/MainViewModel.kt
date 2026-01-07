@@ -68,6 +68,9 @@ class MainViewModel @Inject constructor(
                 MainAction.MyLocationClicked -> {
                     _event.emit(MainEvent.MoveToMyLocation)
                 }
+                MainAction.RecordClicked -> {
+                    _event.emit(MainEvent.NavigateToRecord)
+                }
             }
         }
     }
