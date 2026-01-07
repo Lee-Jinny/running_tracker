@@ -2,13 +2,16 @@ package com.jinnylee.runnningtracker.presentation.screen.main
 
 import android.annotation.SuppressLint
 import android.view.WindowManager
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,11 +26,16 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.jinnylee.runnningtracker.MainActivity
 import com.jinnylee.runnningtracker.R
 import com.jinnylee.runnningtracker.presentation.component.InformationCard
 import com.jinnylee.runnningtracker.presentation.component.TrackingControlPanel
+import com.jinnylee.runnningtracker.ui.theme.Anton
 import com.jinnylee.runnningtracker.ui.theme.Point
+import com.jinnylee.runnningtracker.ui.theme.White
 import com.jinnylee.runnningtracker.util.TimeFormatter
 
 @SuppressLint("MissingPermission")
@@ -40,6 +48,9 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val activity = context as? MainActivity
+
+    // 상태 판별 로직
+    val isIdle = !state.isTracking && state.pathPoints.isEmpty()
 
     // 지도 다크 스타일 로드
     val mapProperties = MapProperties(
@@ -81,16 +92,38 @@ fun MainScreen(
             )
         }
 
-        // [Layer 2] 상단 정보 창 (시간, 거리)
-        InformationCard(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 48.dp),
-            // TimeFormatter에는 초(sec) 단위를 넘겨야 하므로 / 1000
-            time = TimeFormatter.getReadableTime(state.timeDuration / 1000L),
-            distance = "%.1f km".format(state.distanceMeters / 1000f),
-            calories = "${state.calories} kcal"
-        )
+        // 어두운 오버레이 (isIdle일 때만 지도를 살짝 어둡게)
+        if (isIdle) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))
+            )
+        }
+
+        // [Layer 2] 조건부 UI (READY 텍스트 또는 정보 카드)
+        if (isIdle) {
+            // 시작 전: 중앙 안내 텍스트
+            Text(
+                text = "READY TO\nRUN?",
+                modifier = Modifier.align(Alignment.Center),
+                color = White,
+                fontSize = 48.sp,
+                fontFamily = Anton,
+                lineHeight = 56.sp,
+                textAlign = TextAlign.Center
+            )
+        } else {
+            // 운동 중/일시정지: 상단 정보 창
+            InformationCard(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 48.dp),
+                time = TimeFormatter.getReadableTime(state.timeDuration / 1000L),
+                distance = "%.1f km".format(state.distanceMeters / 1000f),
+                calories = "${state.calories} kcal"
+            )
+        }
 
         // [Layer 3] 하단 컨트롤 패널
         TrackingControlPanel(
@@ -142,8 +175,8 @@ fun MainScreenTrackingPreview() {
     MainScreen(
         state = mockState,
         cameraPositionState = cameraPositionState,
-        onMapLoaded = {}, // 프리뷰에선 동작 안 하므로 빈 람다
-        onAction = {}     // 프리뷰에선 동작 안 하므로 빈 람다
+        onMapLoaded = {},
+        onAction = {}
     )
 }
 
