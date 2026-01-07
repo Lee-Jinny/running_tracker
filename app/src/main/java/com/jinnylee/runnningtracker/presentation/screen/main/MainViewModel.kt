@@ -3,8 +3,11 @@ package com.jinnylee.runnningtracker.presentation.screen.main
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jinnylee.runnningtracker.data.dao.RunDao
-import com.jinnylee.runnningtracker.data.entity.Run
+import com.jinnylee.runnningtracker.domain.model.Run
+import com.jinnylee.runnningtracker.domain.repository.RunRepository
+import com.jinnylee.runnningtracker.presentation.screen.main.MainAction
+import com.jinnylee.runnningtracker.presentation.screen.main.MainEvent
+import com.jinnylee.runnningtracker.presentation.screen.main.RunState
 import com.jinnylee.runnningtracker.service.TrackingManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,13 +17,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 import kotlin.math.round
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val runDao: RunDao
+    private val runRepository: RunRepository
 ) : ViewModel() {
 
     // TrackingManager의 데이터를 관찰하여 UI 상태(RunState)로 변환
@@ -88,9 +90,6 @@ class MainViewModel @Inject constructor(
             // 좀 더 정확한 공식: METs 등을 써야 하지만 일단 간단하게
             val caloriesBurned = ((currentState.distanceMeters / 1000f) * 70).toInt()
 
-
-            val imageBytes = bitmap?.toByteArray()
-
             // 3. Run 객체 생성
             val run = Run(
                 timestamp = System.currentTimeMillis(),
@@ -98,17 +97,11 @@ class MainViewModel @Inject constructor(
                 distanceInMeters = currentState.distanceMeters,
                 avgSpeedInKMH = avgSpeed,
                 caloriesBurned = caloriesBurned,
-                img = imageBytes // 지도 스크린샷
+                img = bitmap // 지도 스크린샷
             )
 
             // 4. DB 저장
-            runDao.insertRun(run)
+            runRepository.insertRun(run)
         }
-    }
-
-    private fun Bitmap.toByteArray(): ByteArray {
-        val outputStream = ByteArrayOutputStream()
-        compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-        return outputStream.toByteArray()
     }
 }
